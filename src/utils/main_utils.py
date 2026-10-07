@@ -31,7 +31,7 @@ def save_json(file_path: str, data: dict) -> None:
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
         with open(file_path, "w") as f:
             json.dump(data, f, indent=2)
-        logger.info(f"JSON saved → {file_path}")
+        logger.info(f"JSON saved -> {file_path}")
     except Exception as e:
         raise WeatherException(e, sys)
 
@@ -48,7 +48,7 @@ def save_object(file_path: str, obj: object) -> None:
     try:
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
         joblib.dump(obj, file_path)
-        logger.info(f"Object saved → {file_path}")
+        logger.info(f"Object saved -> {file_path}")
     except Exception as e:
         raise WeatherException(e, sys)
 
@@ -64,6 +64,6 @@ def create_directories(paths: list) -> None:
     try:
         for path in paths:
             os.makedirs(path, exist_ok=True)
-            logger.info(f"Directory created → {path}")
+            logger.info(f"Directory created -> {path}")
     except Exception as e:
         raise WeatherException(e, sys)
