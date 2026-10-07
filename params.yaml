@@ -1,0 +1,23 @@
+data:
+  # ERA5 CDS API — Azamgarh, Uttar Pradesh
+  latitude: 26.00
+  longitude: 83.00
+  area: [26.32, 82.40, 25.38, 83.52]   # North, West, South, East
+  years: ["2021", "2022", "2023", "2024"]
+  timezone: Asia/Kolkata
+ 
+  # Target location
+  target_latitude: 26.00
+  target_longitude: 83.00
+ 
+  variables:
+    - 2m_temperature
+    - 2m_dewpoint_temperature
+    - total_precipitation
+    - surface_pressure
+    - 10m_u_component_of_wind
+    - 10m_v_component_of_wind
+    - total_cloud_cover
+    - low_cloud_cover
+    - medium_cloud_cover
+    - high_cloud_cover

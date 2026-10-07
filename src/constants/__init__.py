@@ -16,9 +16,9 @@ DATA_INGESTION_RAW_DIR: str = "raw"
 DATA_INGESTION_PROCESSED_DIR: str = "processed"
 RAW_FILE_NAME: str = "weather_raw.csv"
 
-# Open-Meteo default coords (Prayagraj — override via params.yaml)
-DEFAULT_LATITUDE: float = 25.4358
-DEFAULT_LONGITUDE: float = 81.8463
+# Open-Meteo default coords (Azamgarh — override via params.yaml)
+DEFAULT_LATITUDE: float = 26.00
+DEFAULT_LONGITUDE: float = 83.00
 DEFAULT_TIMEZONE: str = "Asia/Kolkata"
 DEFAULT_PAST_DAYS: int = 90
 
