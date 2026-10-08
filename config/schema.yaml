@@ -1,3 +1,38 @@
+columns:
+  valid_time: datetime64[ns]
+  temperature: float64
+  surface_pressure: float64
+  total_cloud_cover: float64
+  low_cloud_cover: float64
+  medium_cloud_cover: float64
+  high_cloud_cover: float64
+  precipitation: float64
+  humidity: float64
+  wind_speed: float64
+  hour: int64
+  day: int64
+  month: int64
+  day_of_week: int64
+  hour_sin: float64
+  hour_cos: float64
+  month_sin: float64
+  month_cos: float64
+  temp_lag_1: float64
+  temp_lag_24: float64
+  temp_rolling_6: float64
+  rain_tomorrow: int64
+
+numerical_columns:
+  - temperature
+  - surface_pressure
+  - total_cloud_cover
+  - low_cloud_cover
+  - medium_cloud_cover
+  - high_cloud_cover
+  - precipitation
+  - humidity
+  - wind_speed
+
 valid_ranges:
   temperature:
     min: -20
@@ -28,4 +63,3 @@ valid_ranges:
     max: 60
 
 target_column: rain_tomorrow
-drop_columns: []

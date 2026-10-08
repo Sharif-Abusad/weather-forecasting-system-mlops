@@ -14,3 +14,10 @@ class DataTransformationConfig:
     artifact_dir: str = os.path.join(ARTIFACT_DIR, TIMESTAMP, DATA_TRANSFORMATION_DIR)
     clean_file_path: str = os.path.join(artifact_dir, "weather_clean.csv")
     final_features_path: str = os.path.join(artifact_dir, "weather_final.csv")
+
+
+@dataclass
+class DataValidationConfig:
+    artifact_dir: str = os.path.join(ARTIFACT_DIR, TIMESTAMP, DATA_VALIDATION_DIR)
+    report_file_path: str = os.path.join(artifact_dir, DATA_VALIDATION_REPORT_FILE)
+    schema_file_path: str = SCHEMA_FILE_PATH

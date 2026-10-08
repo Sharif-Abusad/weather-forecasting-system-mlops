@@ -14,3 +14,10 @@ class DataTransformationArtifact:
     final_features_path: str
     is_transformed: bool
     message: str
+
+
+@dataclass
+class DataValidationArtifact:
+    validation_status: bool
+    report_file_path: str
+    message: str
