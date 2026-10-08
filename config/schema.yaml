@@ -1,0 +1,31 @@
+valid_ranges:
+  temperature:
+    min: -20
+    max: 60
+  surface_pressure:
+    min: 850
+    max: 1080
+  total_cloud_cover:
+    min: 0
+    max: 1
+  low_cloud_cover:
+    min: 0
+    max: 1
+  medium_cloud_cover:
+    min: 0
+    max: 1
+  high_cloud_cover:
+    min: 0
+    max: 1
+  precipitation:
+    min: 0
+    max: 300
+  humidity:
+    min: 0
+    max: 100
+  wind_speed:
+    min: 0
+    max: 60
+
+target_column: rain_tomorrow
+drop_columns: []

@@ -21,3 +21,9 @@ data:
     - low_cloud_cover
     - medium_cloud_cover
     - high_cloud_cover
+
+feature_engineering:
+  lag_hours: [1, 24]
+  rolling_window: 6
+  rain_threshold_mm: 1.0
+  rain_lookahead_hours: 24
