@@ -63,12 +63,17 @@ RAIN_TARGET_COL: str = "rain_tomorrow"
 # ── LSTM feature list ─────────────────────────────
 LSTM_FEATURES: list = [
     "temperature",
+    "temp_lag_1",
+    "temp_lag_24",
+    "temp_rolling_6",
+    "humidity",
     "surface_pressure",
     "total_cloud_cover",
-    "precipitation",
-    "humidity",
     "wind_speed",
-    "month",
+    "hour_sin",
+    "hour_cos",
+    "month_sin",
+    "month_cos",
 ]
 
 # ── XGBoost feature list ──────────────────────────
