@@ -21,3 +21,16 @@ class DataValidationArtifact:
     validation_status: bool
     report_file_path: str
     message: str
+
+
+@dataclass
+class ModelTrainerArtifact:
+    lstm_model_path: str
+    xgb_model_path: str
+    lstm_meta_path: str
+    xgb_meta_path: str
+    scaler_path: str
+    lstm_mae: float
+    xgb_auc: float
+    is_trained: bool
+    message: str
