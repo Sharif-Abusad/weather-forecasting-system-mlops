@@ -43,3 +43,10 @@ class ModelEvaluationArtifact:
     xgb_auc: float
     report_file_path: str
     message: str
+
+
+@dataclass
+class ModelPusherArtifact:
+    saved_model_dir: str
+    is_pushed: bool
+    message: str

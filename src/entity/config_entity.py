@@ -41,3 +41,14 @@ class ModelEvaluationConfig:
     lstm_mae_threshold: float = LSTM_MAE_THRESHOLD
     xgb_auc_threshold:  float = XGB_AUC_THRESHOLD
     saved_model_dir:    str   = SAVED_MODEL_DIR
+
+
+@dataclass
+class ModelPusherConfig:
+    artifact_dir:    str = os.path.join(ARTIFACT_DIR, TIMESTAMP, MODEL_PUSHER_DIR)
+    saved_model_dir: str = SAVED_MODEL_DIR
+    lstm_model_path: str = os.path.join(saved_model_dir, LSTM_MODEL_FILE)
+    xgb_model_path:  str = os.path.join(saved_model_dir, XGB_MODEL_FILE)
+    lstm_meta_path:  str = os.path.join(saved_model_dir, LSTM_META_FILE)
+    xgb_meta_path:   str = os.path.join(saved_model_dir, XGB_META_FILE)
+    scaler_path:     str = os.path.join(saved_model_dir, SCALER_FILE_NAME)
