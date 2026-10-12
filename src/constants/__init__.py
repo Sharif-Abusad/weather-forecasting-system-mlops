@@ -45,6 +45,7 @@ MODEL_EVALUATION_DIR: str = "model_evaluation"
 MODEL_EVALUATION_REPORT_FILE: str = "eval_report.json"
 LSTM_MAE_THRESHOLD: float = 5.0        # reject model if MAE exceeds this
 XGB_AUC_THRESHOLD: float = 0.75        # reject model if AUC below this
+SAVED_MODEL_DIR: str = "saved_models"
 
 # ── Model Pusher ──────────────────────────────────
 MODEL_PUSHER_DIR: str = "model_pusher"

@@ -1,15 +1,17 @@
 """
 Model Evaluation Module
 
-Evaluates both trained models against acceptance thresholds:
-1. Loads LSTM and XGBoost models from artifact directory.
-2. Evaluates LSTM — MAE, RMSE, R² on held-out test set.
-3. Evaluates XGBoost — AUC, F1, Accuracy on held-out test set.
-4. Compares metrics against thresholds from config.
-5. Generates evaluation plots (ROC curve, forecast plot).
-6. Saves evaluation report as JSON.
-7. Logs results to MLflow.
-8. Returns ModelEvaluationArtifact with acceptance decision.
+Evaluates both trained models with two-stage acceptance logic:
+1. If no previous model exists → use fixed thresholds.
+2. If previous model exists → accept only if new model is better.
+
+Acceptance criteria:
+- LSTM : new MAE < previous MAE  (lower is better)
+- XGBoost: new AUC > previous AUC (higher is better)
+
+Fixed thresholds (first run only):
+- LSTM MAE  <= 5.0 °C
+- XGBoost AUC >= 0.75
 """
 
 import os
@@ -26,8 +28,7 @@ import tensorflow as tf
 from xgboost import XGBClassifier
 from sklearn.metrics import (
     mean_absolute_error, mean_squared_error, r2_score,
-    roc_auc_score, f1_score, accuracy_score,
-    roc_curve
+    roc_auc_score, f1_score, accuracy_score, roc_curve,
 )
 from sklearn.preprocessing import MinMaxScaler
 
@@ -49,25 +50,41 @@ class ModelEvaluation:
         self.model_trainer_artifact = model_trainer_artifact
         self.params                 = read_yaml_file("params.yaml")
 
-    # ── Load models ──────────────────────────────────────────
-    def _load_models(self):
+    # ── Load previous metrics from saved_models ──────────────
+    def _load_previous_metrics(self) -> dict | None:
         try:
-            xgb_model = XGBClassifier()
-            xgb_model.load_model(self.model_trainer_artifact.xgb_model_path)
-
-            lstm_model = tf.keras.models.load_model(
-                self.model_trainer_artifact.lstm_model_path,
-                safe_mode=False,
+            lstm_meta_path = os.path.join(
+                self.config.saved_model_dir, "lstm_model_meta.json"
             )
-            scaler = joblib.load(self.model_trainer_artifact.scaler_path)
+            xgb_meta_path = os.path.join(
+                self.config.saved_model_dir, "xgb_model_meta.json"
+            )
 
-            with open(self.model_trainer_artifact.lstm_meta_path) as f:
+            if not os.path.exists(lstm_meta_path) or \
+               not os.path.exists(xgb_meta_path):
+                logger.info(
+                    "No previous model found — "
+                    "will use fixed thresholds."
+                )
+                return None
+
+            with open(lstm_meta_path) as f:
                 lstm_meta = json.load(f)
-            with open(self.model_trainer_artifact.xgb_meta_path) as f:
+            with open(xgb_meta_path) as f:
                 xgb_meta = json.load(f)
 
-            logger.info("Models loaded successfully")
-            return xgb_model, lstm_model, scaler, lstm_meta, xgb_meta
+            prev = {
+                "lstm_mae": lstm_meta["metrics"]["mae_celsius"],
+                "lstm_rmse": lstm_meta["metrics"]["rmse_celsius"],
+                "xgb_auc" : xgb_meta["roc_auc"],
+                "xgb_f1" : xgb_meta["metrics_at_best_threshold"]["f1_score"],
+            }
+            logger.info(
+                f"Previous model — "
+                f"LSTM MAE: {prev['lstm_mae']} | "
+                f"XGB AUC: {prev['xgb_auc']}"
+            )
+            return prev
 
         except Exception as e:
             raise WeatherException(e, sys)
@@ -91,11 +108,11 @@ class ModelEvaluation:
             y_prob = model.predict_proba(X_test)[:, 1]
             y_pred = (y_prob >= threshold).astype(int)
 
-            acc = accuracy_score(y_test, y_pred)
-            f1  = f1_score(y_test, y_pred, zero_division=0)
+            acc       = accuracy_score(y_test, y_pred)
+            f1        = f1_score(y_test, y_pred, zero_division=0)
             auc_score = roc_auc_score(y_test, y_prob)
 
-            # ROC curve plot
+            # ROC plot
             fpr, tpr, _ = roc_curve(y_test, y_prob)
             fig, ax = plt.subplots(figsize=(7, 5))
             ax.plot(fpr, tpr, color="#3b9eff", lw=2, label=f"AUC = {auc_score:.4f}")
@@ -110,8 +127,7 @@ class ModelEvaluation:
 
             logger.info(
                 f"XGBoost Eval — AUC: {auc_score:.4f} | "
-                f"F1: {f1:.4f} | ACC: {acc:.4f} | "
-                f"Threshold: {threshold}"
+                f"F1: {f1:.4f} | ACC: {acc:.4f}"
             )
 
             return {
@@ -148,9 +164,10 @@ class ModelEvaluation:
                 .reset_index(drop=True)
             )
 
-            scaled = scaler.transform(df_model[features].values).astype(np.float32)
+            scaled = scaler.transform(
+                df_model[features].values
+            ).astype(np.float32)
 
-            # Rebuild test sequences
             X_all, y_all = [], []
             for i in range(len(scaled) - lookback - forecast_n + 1):
                 X_all.append(scaled[i: i + lookback])
@@ -158,8 +175,7 @@ class ModelEvaluation:
             X_all = np.array(X_all, dtype=np.float32)
             y_all = np.array(y_all, dtype=np.float32)
 
-            n       = len(X_all)
-            val_end = int(n * 0.85)
+            val_end = int(len(X_all) * 0.85)
             X_test  = X_all[val_end:]
             y_test  = y_all[val_end:]
 
@@ -180,8 +196,8 @@ class ModelEvaluation:
             # Forecast plot
             n_show = min(200, len(y_true_C))
             fig, ax = plt.subplots(figsize=(14, 4))
-            ax.plot(range(n_show), y_true_C[:n_show, 0], label="Actual",    color="#E85D5D", lw=1.5)
-            ax.plot(range(n_show), y_pred_C[:n_show, 0], label="Pred +1h",  color="#4A90D9", lw=1.5, ls="--")
+            ax.plot(range(n_show), y_true_C[:n_show, 0], label="Actual",   color="#E85D5D", lw=1.5)
+            ax.plot(range(n_show), y_pred_C[:n_show, 0], label="Pred +1h", color="#4A90D9", lw=1.5, ls="--")
             ax.set_title("LSTM Temperature Forecast — Evaluation", fontweight="bold")
             ax.set_ylabel("Temperature (°C)"); ax.legend()
             plt.tight_layout()
@@ -205,6 +221,49 @@ class ModelEvaluation:
         except Exception as e:
             raise WeatherException(e, sys)
 
+    # ── Acceptance logic ─────────────────────────────────────
+    def _check_acceptance(
+        self,
+        lstm_results: dict,
+        xgb_results: dict,
+        previous: dict | None,
+    ) -> tuple[bool, str]:
+
+        new_mae = lstm_results["mae_celsius"]
+        new_rmse = lstm_results["rmse_celsius"]
+        new_auc = xgb_results["roc_auc"]
+        new_f1 = xgb_results["f1_score"]
+
+        if previous is None:
+            # First run — use fixed thresholds
+            lstm_ok = new_mae <= self.config.lstm_mae_threshold
+            xgb_ok  = new_auc >= self.config.xgb_auc_threshold
+
+            reason = (
+                f"First run - fixed thresholds. "
+                f"LSTM MAE {new_mae} <= {self.config.lstm_mae_threshold}: {lstm_ok} | "
+                f"XGB AUC {new_auc} >= {self.config.xgb_auc_threshold}: {xgb_ok}"
+            )
+        else:
+            # Compare against previous model
+            # Primary must improve, secondary/tertiary can have small regression
+            prev_mae = previous["lstm_mae"]
+            prev_rmse = previous["lstm_rmse"]
+            prev_auc = previous["xgb_auc"]
+            prev_f1 = previous["xgb_f1"]
+            
+            lstm_ok = (new_mae < prev_mae) and (new_rmse < prev_rmse * 1.05)  # 5% tolerance on RMSE
+            xgb_ok  = (new_auc > prev_auc) and (new_f1  > prev_f1  * 0.95)   # 5% tolerance on F1
+            reason = (
+                f"Compared to previous model. "
+                f"LSTM MAE {new_mae} < {previous['lstm_mae']} (prev): {lstm_ok} | "
+                f"XGB AUC {new_auc} > {previous['xgb_auc']} (prev): {xgb_ok}"
+            )
+
+        accepted = lstm_ok and xgb_ok
+        logger.info(f"Acceptance check — {reason}")
+        return accepted, reason
+
     # ── Orchestrator ─────────────────────────────────────────
     def initiate_model_evaluation(self) -> ModelEvaluationArtifact:
         try:
@@ -212,12 +271,14 @@ class ModelEvaluation:
             logger.info("Starting Model Evaluation")
             logger.info("=" * 60)
 
-            # Load features
+            # Load feature data
             path = (
                 self.model_trainer_artifact
                 .lstm_model_path
                 .replace(
-                    os.path.basename(self.model_trainer_artifact.lstm_model_path), ""
+                    os.path.basename(
+                        self.model_trainer_artifact.lstm_model_path
+                    ), ""
                 )
                 .replace("model_trainer", "data_transformation")
                 + "weather_final.csv"
@@ -227,33 +288,50 @@ class ModelEvaluation:
 
             create_directories([self.config.artifact_dir])
 
-            xgb_model, lstm_model, scaler, lstm_meta, xgb_meta = self._load_models()
+            # Load models
+            xgb_model = XGBClassifier()
+            xgb_model.load_model(self.model_trainer_artifact.xgb_model_path)
 
+            lstm_model = tf.keras.models.load_model(
+                self.model_trainer_artifact.lstm_model_path,
+                safe_mode=False,
+            )
+            scaler = joblib.load(self.model_trainer_artifact.scaler_path)
+
+            with open(self.model_trainer_artifact.lstm_meta_path) as f:
+                lstm_meta = json.load(f)
+            with open(self.model_trainer_artifact.xgb_meta_path) as f:
+                xgb_meta = json.load(f)
+
+            # Evaluate
             xgb_results  = self._evaluate_xgboost(xgb_model, xgb_meta, df)
             lstm_results = self._evaluate_lstm(lstm_model, scaler, lstm_meta, df)
 
-            # Acceptance check
-            xgb_accepted  = xgb_results["roc_auc"] >= self.config.xgb_auc_threshold
-            lstm_accepted = lstm_results["mae_celsius"] <= self.config.lstm_mae_threshold
-            is_accepted   = xgb_accepted and lstm_accepted
-
-            logger.info(
-                f"XGBoost accepted : {xgb_accepted} "
-                f"(AUC {xgb_results['roc_auc']} >= {self.config.xgb_auc_threshold})"
-            )
-            logger.info(
-                f"LSTM accepted    : {lstm_accepted} "
-                f"(MAE {lstm_results['mae_celsius']} <= {self.config.lstm_mae_threshold})"
+            # Load previous metrics and check acceptance
+            previous              = self._load_previous_metrics()
+            is_accepted, reason   = self._check_acceptance(
+                lstm_results, xgb_results, previous
             )
 
             report = {
-                "is_model_accepted" : is_accepted,
-                "xgboost"           : xgb_results,
-                "lstm"              : lstm_results,
-                "thresholds": {
-                    "xgb_auc_min"  : self.config.xgb_auc_threshold,
-                    "lstm_mae_max" : self.config.lstm_mae_threshold,
+                "is_model_accepted": is_accepted,
+                "acceptance_reason": reason,
+                "new_model": {
+                    "lstm_mae": lstm_results["mae_celsius"],
+                    "lstm_rmse": lstm_results["rmse_celsius"],
+                    "xgb_auc" : xgb_results["roc_auc"],
+                    "xgb_f1" : xgb_results["f1_score"],
                 },
+                "previous_model": previous,
+                "thresholds": {
+                    "lstm_mae_max"  : self.config.lstm_mae_threshold,
+                    "lstm_rmse_tol" : "5% tolerance",
+                    "xgb_auc_min"   : self.config.xgb_auc_threshold,
+                    "xgb_f1_tol"    : "5% tolerance",
+                    "mode"          : "fixed" if previous is None else "comparison",
+                },
+                "xgboost" : xgb_results,
+                "lstm"    : lstm_results,
             }
             save_json(self.config.report_file_path, report)
 
@@ -265,13 +343,24 @@ class ModelEvaluation:
             with mlflow.start_run(run_name="model_evaluation"):
                 mlflow.set_tag("stage", "evaluation")
                 mlflow.log_metrics({
-                    "eval_xgb_roc_auc"    : xgb_results["roc_auc"],
-                    "eval_xgb_f1"         : xgb_results["f1_score"],
-                    "eval_lstm_mae"       : lstm_results["mae_celsius"],
-                    "eval_lstm_rmse"      : lstm_results["rmse_celsius"],
-                    "eval_lstm_r2"        : lstm_results["r2_score"],
-                    "model_accepted"      : int(is_accepted),
+                    "eval_xgb_roc_auc" : xgb_results["roc_auc"],
+                    "eval_xgb_f1"      : xgb_results["f1_score"],
+                    "eval_lstm_mae"    : lstm_results["mae_celsius"],
+                    "eval_lstm_rmse"   : lstm_results["rmse_celsius"],
+                    "eval_lstm_r2"     : lstm_results["r2_score"],
+                    "model_accepted"   : int(is_accepted),
                 })
+                if previous:
+                    mlflow.log_metrics({
+                        "prev_lstm_mae": previous["lstm_mae"],
+                        "prev_xgb_auc" : previous["xgb_auc"],
+                        "lstm_mae_improvement": round(
+                            previous["lstm_mae"] - lstm_results["mae_celsius"], 4
+                        ),
+                        "xgb_auc_improvement": round(
+                            xgb_results["roc_auc"] - previous["xgb_auc"], 4
+                        ),
+                    })
                 mlflow.log_artifact(self.config.report_file_path)
                 try:
                     mlflow.log_artifact(xgb_results["roc_plot"])
@@ -280,16 +369,11 @@ class ModelEvaluation:
                     pass
 
             artifact = ModelEvaluationArtifact(
-                is_model_accepted = is_accepted,
-                lstm_mae          = lstm_results["mae_celsius"],
-                xgb_auc           = xgb_results["roc_auc"],
-                report_file_path  = self.config.report_file_path,
-                message=(
-                    "Models accepted." if is_accepted
-                    else f"Models rejected — "
-                         f"XGB AUC: {xgb_results['roc_auc']} | "
-                         f"LSTM MAE: {lstm_results['mae_celsius']}"
-                ),
+                is_model_accepted=is_accepted,
+                lstm_mae=lstm_results["mae_celsius"],
+                xgb_auc=xgb_results["roc_auc"],
+                report_file_path=self.config.report_file_path,
+                message=reason,
             )
 
             logger.info("=" * 60)
