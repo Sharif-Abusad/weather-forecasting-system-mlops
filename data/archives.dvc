@@ -1,0 +1,6 @@
+outs:
+- md5: 95084506c26271d7d211c05272acce77.dir
+  size: 27383362
+  nfiles: 60
+  hash: md5
+  path: archives
