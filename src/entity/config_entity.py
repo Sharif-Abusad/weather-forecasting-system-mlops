@@ -32,3 +32,11 @@ class ModelTrainerConfig:
     xgb_meta_path:    str = os.path.join(artifact_dir, XGB_META_FILE)
     scaler_path:      str = os.path.join(artifact_dir, SCALER_FILE_NAME)
     params_file_path: str = PARAMS_FILE_PATH
+
+
+@dataclass
+class ModelEvaluationConfig:
+    artifact_dir:       str = os.path.join(ARTIFACT_DIR, TIMESTAMP, MODEL_EVALUATION_DIR)
+    report_file_path:   str = os.path.join(artifact_dir, MODEL_EVALUATION_REPORT_FILE)
+    lstm_mae_threshold: float = LSTM_MAE_THRESHOLD
+    xgb_auc_threshold:  float = XGB_AUC_THRESHOLD

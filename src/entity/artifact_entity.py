@@ -34,3 +34,12 @@ class ModelTrainerArtifact:
     xgb_auc: float
     is_trained: bool
     message: str
+
+
+@dataclass
+class ModelEvaluationArtifact:
+    is_model_accepted: bool
+    lstm_mae: float
+    xgb_auc: float
+    report_file_path: str
+    message: str
