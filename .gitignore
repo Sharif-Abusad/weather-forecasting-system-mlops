@@ -60,6 +60,8 @@ reports/figures
 # Ignore data contents but NOT .dvc pointer files
 data/archives/
 data/raw/
+data/processed/
+data/features/
 
 # Keep .dvc pointer files
 !data/archives.dvc

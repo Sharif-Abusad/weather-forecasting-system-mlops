@@ -21,6 +21,7 @@ from src.entity.artifact_entity import ModelTrainerArtifact, DataValidationArtif
 from src.utils.main_utils import create_directories
 from src.components.xgboost_trainer import XGBoostTrainer
 from src.components.lstm_trainer import LSTMTrainer
+from src.constants import DATA_TRANSFORMATION_FEATURES_DIR
 
 
 class ModelTrainer:
@@ -35,13 +36,7 @@ class ModelTrainer:
 
     def _load_features(self) -> pd.DataFrame:
         try:
-            path = (
-                self.data_validation_artifact
-                .report_file_path
-                .replace("validation_report.json", "")
-                .replace("data_validation", "data_transformation")
-                + "weather_final.csv"
-            )
+            path = os.path.join(DATA_TRANSFORMATION_FEATURES_DIR, "weather_final.csv")
             df = pd.read_csv(path, parse_dates=["valid_time"])
             df = df.sort_values("valid_time").reset_index(drop=True)
             logger.info(f"Features loaded — {len(df):,} rows from {path}")

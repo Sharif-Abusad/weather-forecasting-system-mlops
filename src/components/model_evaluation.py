@@ -37,7 +37,7 @@ from src.exception import WeatherException
 from src.entity.config_entity import ModelEvaluationConfig
 from src.entity.artifact_entity import ModelEvaluationArtifact, ModelTrainerArtifact
 from src.utils.main_utils import read_yaml_file, save_json, create_directories
-
+from src.constants import DATA_TRANSFORMATION_FEATURES_DIR
 
 class ModelEvaluation:
 
@@ -272,17 +272,8 @@ class ModelEvaluation:
             logger.info("=" * 60)
 
             # Load feature data
-            path = (
-                self.model_trainer_artifact
-                .lstm_model_path
-                .replace(
-                    os.path.basename(
-                        self.model_trainer_artifact.lstm_model_path
-                    ), ""
-                )
-                .replace("model_trainer", "data_transformation")
-                + "weather_final.csv"
-            )
+            path = os.path.join(DATA_TRANSFORMATION_FEATURES_DIR, "weather_final.csv")
+
             df = pd.read_csv(path, parse_dates=["valid_time"])
             df = df.sort_values("valid_time").reset_index(drop=True)
 

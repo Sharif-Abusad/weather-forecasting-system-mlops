@@ -29,9 +29,8 @@ DATA_VALIDATION_REPORT_FILE: str = "validation_report.json"
 # ── Data Transformation ───────────────────────────
 DATA_TRANSFORMATION_DIR: str = "data_transformation"
 DATA_TRANSFORMATION_FEATURES_DIR: str = "features"
-LSTM_FEATURES_FILE: str = "lstm_features.csv"
-XGB_FEATURES_FILE: str = "xgb_features.csv"
-SCALER_FILE_NAME: str = "lstm_temp_scaler.pkl"
+DATA_TRANSFORMATION_PROCESSED_DIR: str = os.path.join("data", "processed")
+DATA_TRANSFORMATION_FEATURES_DIR:  str = os.path.join("data", "features")
 
 # ── Model Trainer ─────────────────────────────────
 MODEL_TRAINER_DIR: str = "model_trainer"
@@ -39,6 +38,7 @@ LSTM_MODEL_FILE: str = "lstm_temp_model.keras"
 XGB_MODEL_FILE: str = "rain_model.json"
 LSTM_META_FILE: str = "lstm_model_meta.json"
 XGB_META_FILE: str = "xgb_model_meta.json"
+SCALER_FILE_NAME: str = "lstm_temp_scaler.pkl"
 
 # ── Model Evaluation ──────────────────────────────
 MODEL_EVALUATION_DIR: str = "model_evaluation"

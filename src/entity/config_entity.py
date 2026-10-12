@@ -12,8 +12,8 @@ class DataIngestionConfig:
 @dataclass
 class DataTransformationConfig:
     artifact_dir:        str = os.path.join(ARTIFACT_DIR, TIMESTAMP, DATA_TRANSFORMATION_DIR)
-    clean_file_path:     str = os.path.join(artifact_dir, "weather_clean.csv")
-    final_features_path: str = os.path.join(artifact_dir, "weather_final.csv")
+    clean_file_path:     str = os.path.join(DATA_TRANSFORMATION_PROCESSED_DIR, "weather_clean.csv")
+    final_features_path: str = os.path.join(DATA_TRANSFORMATION_FEATURES_DIR,  "weather_final.csv")
 
 
 @dataclass
