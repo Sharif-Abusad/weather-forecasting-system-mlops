@@ -57,6 +57,14 @@ reports/figures
 # DVC
 .dvc/cache/
 
+# Ignore data contents but NOT .dvc pointer files
+data/archives/
+data/raw/
+
+# Keep .dvc pointer files
+!data/archives.dvc
+!data/raw.dvc
+
 # =========================
 # Data
 # =========================
