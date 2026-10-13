@@ -125,4 +125,3 @@ htmlcov/
 *.temp
 *.bak
 *.swp
-/saved_models
