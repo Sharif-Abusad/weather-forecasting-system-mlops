@@ -75,7 +75,6 @@ data/features/
 # =========================
 *.csv
 *.parquet
-*.pkl
 *.joblib
 *.h5
 *.hdf5
@@ -89,7 +88,6 @@ models/
 *.pt
 *.pth
 *.onnx
-*.keras
 *.weights
 
 # =========================

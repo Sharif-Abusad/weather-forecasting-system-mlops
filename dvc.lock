@@ -1,0 +1,247 @@
+schema: '2.0'
+stages:
+  data_ingestion:
+    cmd: python -m src.components.data_ingestion
+    deps:
+    - path: params.yaml
+      hash: md5
+      md5: e05caf94c8536e53a166f03fe1dc02c4
+      size: 2040
+    - path: src/components/data_ingestion.py
+      hash: md5
+      md5: ee39179f709a8d3db0d137dc59b2419a
+      size: 9603
+    - path: src/constants/__init__.py
+      hash: md5
+      md5: 06af09f877597dff00b18a6e60156634
+      size: 4060
+    - path: src/entity/config_entity.py
+      hash: md5
+      md5: abfd19ce53ca9bf60cbe17aef208ad57
+      size: 2723
+    params:
+      params.yaml:
+        data.area:
+        - 26.32
+        - 82.4
+        - 25.38
+        - 83.52
+        data.target_latitude: 26.0
+        data.target_longitude: 83.0
+        data.variables:
+        - 2m_temperature
+        - 2m_dewpoint_temperature
+        - total_precipitation
+        - surface_pressure
+        - 10m_u_component_of_wind
+        - 10m_v_component_of_wind
+        - total_cloud_cover
+        - low_cloud_cover
+        - medium_cloud_cover
+        - high_cloud_cover
+        data.years:
+        - '2021'
+        - '2022'
+        - '2023'
+        - '2024'
+        - '2025'
+    outs:
+    - path: data/raw
+      hash: md5
+      md5: 73d13e0d0c475aa971d800df279e89de.dir
+      size: 32872608
+      nfiles: 121
+  data_transformation:
+    cmd: python -m src.components.data_transformation
+    deps:
+    - path: config/schema.yaml
+      hash: md5
+      md5: 218dc3a577aabcdd0d17e906553dd3a8
+      size: 1177
+    - path: data/raw
+      hash: md5
+      md5: 73d13e0d0c475aa971d800df279e89de.dir
+      size: 32872608
+      nfiles: 121
+    - path: params.yaml
+      hash: md5
+      md5: e05caf94c8536e53a166f03fe1dc02c4
+      size: 2040
+    - path: src/components/data_transformation.py
+      hash: md5
+      md5: bebbad458bada5b5741576cbd974b01a
+      size: 15278
+    - path: src/constants/__init__.py
+      hash: md5
+      md5: 06af09f877597dff00b18a6e60156634
+      size: 4060
+    - path: src/entity/config_entity.py
+      hash: md5
+      md5: abfd19ce53ca9bf60cbe17aef208ad57
+      size: 2723
+    params:
+      params.yaml:
+        feature_engineering.lag_hours:
+        - 1
+        - 24
+        feature_engineering.rain_lookahead_hours: 24
+        feature_engineering.rain_threshold_mm: 1.0
+        feature_engineering.rolling_window: 6
+    outs:
+    - path: data/features
+      hash: md5
+      md5: 4ac527893531cb4f24fb33e0bc47934e.dir
+      size: 6472289
+      nfiles: 1
+    - path: data/processed
+      hash: md5
+      md5: 55868e906cce5804a7576985973abec8.dir
+      size: 3710076
+      nfiles: 1
+  data_validation:
+    cmd: python -m src.components.data_validation
+    deps:
+    - path: config/schema.yaml
+      hash: md5
+      md5: 218dc3a577aabcdd0d17e906553dd3a8
+      size: 1177
+    - path: data/features
+      hash: md5
+      md5: 4ac527893531cb4f24fb33e0bc47934e.dir
+      size: 6472289
+      nfiles: 1
+    - path: src/components/data_validation.py
+      hash: md5
+      md5: de75daff0bbb536855b8eb0621b52845
+      size: 10035
+    outs:
+    - path: reports/validation_report.json
+      hash: md5
+      md5: 74331afc9f58eb99b5efefa0eb7d8525
+      size: 1084
+  model_trainer:
+    cmd: python -m src.components.model_trainer
+    deps:
+    - path: data/features
+      hash: md5
+      md5: 4ac527893531cb4f24fb33e0bc47934e.dir
+      size: 6472289
+      nfiles: 1
+    - path: params.yaml
+      hash: md5
+      md5: e05caf94c8536e53a166f03fe1dc02c4
+      size: 2040
+    - path: reports/validation_report.json
+      hash: md5
+      md5: 74331afc9f58eb99b5efefa0eb7d8525
+      size: 1084
+    - path: src/components/lstm_trainer.py
+      hash: md5
+      md5: fa3d9769d123ae73620ba1296428f420
+      size: 15500
+    - path: src/components/model_trainer.py
+      hash: md5
+      md5: 3bc90d25517279996d4c243e15e763f7
+      size: 5619
+    - path: src/components/xgboost_trainer.py
+      hash: md5
+      md5: c641bd524923ba2fcfe60f373616fb98
+      size: 12584
+    - path: src/entity/config_entity.py
+      hash: md5
+      md5: abfd19ce53ca9bf60cbe17aef208ad57
+      size: 2723
+    params:
+      params.yaml:
+        lstm.batch_size: 32
+        lstm.dropout: 0.21596778466458033
+        lstm.epochs: 2
+        lstm.features:
+        - temperature
+        - temp_lag_1
+        - temp_lag_24
+        - temp_rolling_6
+        - humidity
+        - surface_pressure
+        - total_cloud_cover
+        - wind_speed
+        - hour_sin
+        - hour_cos
+        - month_sin
+        - month_cos
+        lstm.forecast_n: 5
+        lstm.lookback: 24
+        lstm.patience: 10
+        lstm.units: 64
+        split.random_state: 42
+        split.test_size: 0.2
+        xgboost.colsample_bytree: 0.6300398129828485
+        xgboost.features:
+        - temperature
+        - surface_pressure
+        - total_cloud_cover
+        - low_cloud_cover
+        - medium_cloud_cover
+        - high_cloud_cover
+        - precipitation
+        - humidity
+        - wind_speed
+        - temp_rolling_6
+        - temp_lag_1
+        - temp_lag_24
+        - month
+        xgboost.learning_rate: 0.2000597712440253
+        xgboost.max_depth: 3
+        xgboost.n_estimators: 304
+        xgboost.subsample: 0.9090186258927353
+        xgboost.threshold: 0.7
+    outs:
+    - path: saved_models
+      hash: md5
+      md5: 54610bad26d369b1320aaf47168b0237.dir
+      size: 972852
+      nfiles: 5
+  model_evaluation:
+    cmd: python -m src.components.model_evaluation
+    deps:
+    - path: data/features
+      hash: md5
+      md5: 4ac527893531cb4f24fb33e0bc47934e.dir
+      size: 6472289
+      nfiles: 1
+    - path: saved_models
+      hash: md5
+      md5: 54610bad26d369b1320aaf47168b0237.dir
+      size: 972852
+      nfiles: 5
+    - path: src/components/model_evaluation.py
+      hash: md5
+      md5: 5681ee3c648015037ee6921a58db50a8
+      size: 16291
+    outs:
+    - path: reports/eval_report.json
+      hash: md5
+      md5: be4c823e1ded3b47734396c070a46104
+      size: 918
+  model_pusher:
+    cmd: python -m src.components.model_pusher
+    deps:
+    - path: reports/eval_report.json
+      hash: md5
+      md5: be4c823e1ded3b47734396c070a46104
+      size: 918
+    - path: saved_models
+      hash: md5
+      md5: 54610bad26d369b1320aaf47168b0237.dir
+      size: 972852
+      nfiles: 5
+    - path: src/components/model_pusher.py
+      hash: md5
+      md5: 095a7aaf76d843ecf60f32a448186eae
+      size: 4410
+    outs:
+    - path: deployment
+      hash: md5
+      md5: 54610bad26d369b1320aaf47168b0237.dir
+      size: 972852
+      nfiles: 5
