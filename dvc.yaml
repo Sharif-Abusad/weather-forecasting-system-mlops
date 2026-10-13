@@ -1,0 +1,96 @@
+stages:
+
+  data_ingestion:
+    cmd: python -m src.components.data_ingestion
+    deps:
+      - src/components/data_ingestion.py
+      - src/entity/config_entity.py
+      - src/constants/__init__.py
+      - params.yaml
+    params:
+      - data.years
+      - data.area
+      - data.variables
+      - data.target_latitude
+      - data.target_longitude
+    outs:
+      - data/raw
+
+  data_transformation:
+    cmd: python -m src.components.data_transformation
+    deps:
+      - src/components/data_transformation.py
+      - src/entity/config_entity.py
+      - src/constants/__init__.py
+      - config/schema.yaml
+      - params.yaml
+      - data/raw
+    params:
+      - feature_engineering.lag_hours
+      - feature_engineering.rolling_window
+      - feature_engineering.rain_threshold_mm
+      - feature_engineering.rain_lookahead_hours
+    outs:
+      - data/processed
+      - data/features
+
+  data_validation:
+    cmd: python -m src.components.data_validation
+    deps:
+      - src/components/data_validation.py
+      - config/schema.yaml
+      - data/features
+    outs:
+      - reports/validation_report.json:
+          cache: false
+
+  model_trainer:
+    cmd: python -m src.components.model_trainer
+    deps:
+      - src/components/model_trainer.py
+      - src/components/xgboost_trainer.py
+      - src/components/lstm_trainer.py
+      - src/entity/config_entity.py
+      - params.yaml
+      - data/features
+      - reports/validation_report.json
+    params:
+      - lstm.lookback
+      - lstm.forecast_n
+      - lstm.units
+      - lstm.dropout
+      - lstm.batch_size
+      - lstm.epochs
+      - lstm.patience
+      - lstm.features
+      - xgboost.n_estimators
+      - xgboost.max_depth
+      - xgboost.learning_rate
+      - xgboost.subsample
+      - xgboost.colsample_bytree
+      - xgboost.threshold
+      - xgboost.features
+      - split.test_size
+      - split.random_state
+    outs:
+      - saved_models
+
+  model_evaluation:
+    cmd: python -m src.components.model_evaluation
+    deps:
+      - src/components/model_evaluation.py
+      - saved_models
+      - data/features
+    outs:
+      - reports/eval_report.json:
+          cache: false
+
+  model_pusher:
+    cmd: python -m src.components.model_pusher
+    deps:
+      - src/components/model_pusher.py
+      - reports/eval_report.json
+      - saved_models
+    outs:
+      - deployment:
+          cache: false

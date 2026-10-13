@@ -3,7 +3,7 @@ from dataclasses import dataclass
  
 @dataclass
 class DataIngestionArtifact:
-    raw_file_path: str
+    raw_file: str
     is_ingested: bool
     message: str
 
@@ -47,6 +47,6 @@ class ModelEvaluationArtifact:
 
 @dataclass
 class ModelPusherArtifact:
-    saved_model_dir: str
+    pushed_model_dir: str
     is_pushed: bool
     message: str

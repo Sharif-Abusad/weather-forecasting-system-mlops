@@ -375,22 +375,27 @@ class ModelEvaluation:
         except Exception as e:
             raise WeatherException(e, sys)
 
-
+        
 if __name__ == "__main__":
-    from src.entity.config_entity import (
-        DataIngestionConfig, DataTransformationConfig,
-        DataValidationConfig, ModelTrainerConfig,
-        ModelEvaluationConfig,
-    )
-    from src.components.data_ingestion import DataIngestion
-    from src.components.data_transformation import DataTransformation
-    from src.components.data_validation import DataValidation
-    from src.components.model_trainer import ModelTrainer
+    import json
+    from src.entity.config_entity import ModelEvaluationConfig, ModelTrainerConfig
+    from src.entity.artifact_entity import ModelTrainerArtifact
 
-    ingestion_artifact      = DataIngestion(DataIngestionConfig()).initiate_data_ingestion()
-    transformation_artifact = DataTransformation(DataTransformationConfig(), ingestion_artifact).initiate_data_transformation()
-    validation_artifact     = DataValidation(DataValidationConfig(), transformation_artifact).initiate_data_validation()
-    trainer_artifact        = ModelTrainer(ModelTrainerConfig(), validation_artifact).initiate_model_trainer()
+    # Load trainer artifact from the latest artifact directory
+    # import glob
+    # latest = sorted(glob.glob("artifact/*/model_trainer"))[-1]
+
+    trainer_artifact = ModelTrainerArtifact(
+        lstm_model_path = ModelTrainerConfig().lstm_model_path,
+        xgb_model_path  = ModelTrainerConfig().xgb_model_path,
+        lstm_meta_path  = ModelTrainerConfig().lstm_meta_path,
+        xgb_meta_path   = ModelTrainerConfig().xgb_meta_path,
+        scaler_path     = ModelTrainerConfig().scaler_path,
+        lstm_mae        = 0.0,
+        xgb_auc         = 0.0,
+        is_trained      = True,
+        message         = "Loaded from saved_models",
+    )
 
     evaluator = ModelEvaluation(ModelEvaluationConfig(), trainer_artifact)
     artifact  = evaluator.initiate_model_evaluation()

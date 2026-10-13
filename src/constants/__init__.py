@@ -31,6 +31,7 @@ DATA_TRANSFORMATION_DIR: str = "data_transformation"
 DATA_TRANSFORMATION_FEATURES_DIR: str = "features"
 DATA_TRANSFORMATION_PROCESSED_DIR: str = os.path.join("data", "processed")
 DATA_TRANSFORMATION_FEATURES_DIR:  str = os.path.join("data", "features")
+DATA_TRANSFORMATION_REPORT_FILE:   str = "transformation_report.json"
 
 # ── Model Trainer ─────────────────────────────────
 MODEL_TRAINER_DIR: str = "model_trainer"
@@ -48,8 +49,7 @@ XGB_AUC_THRESHOLD: float = 0.75        # reject model if AUC below this
 SAVED_MODEL_DIR: str = "saved_models"
 
 # ── Model Pusher ──────────────────────────────────
-MODEL_PUSHER_DIR: str = "model_pusher"
-SAVED_MODEL_DIR: str = "saved_models"
+PUSHED_MODEL_DIR: str = "deployment"
 
 # ── MLflow ────────────────────────────────────────
 MLFLOW_TRACKING_URI: str = os.getenv("MLFLOW_TRACKING_URI", "http://localhost:5000")

@@ -244,13 +244,11 @@ class DataIngestion:
 
     def save_raw_data(self, df: pd.DataFrame) -> None:
         try:
-            create_directories([
-                os.path.dirname(self.config.raw_file_path)
-            ])
+            create_directories([os.path.dirname(self.config.raw_file)])
 
-            df.to_csv(self.config.raw_file_path, index=False)
+            df.to_csv(self.config.raw_file, index=False)
 
-            logger.info(f"Raw CSV saved -> {self.config.raw_file_path}")
+            logger.info(f"Raw CSV saved -> {self.config.raw_file}")
 
         except Exception as e:
             raise WeatherException(e, sys)
@@ -275,7 +273,7 @@ class DataIngestion:
             self.save_raw_data(df)
 
             artifact = DataIngestionArtifact(
-                raw_file_path=self.config.raw_file_path,
+                raw_file=self.config.raw_file,
                 is_ingested=True,
                 message=f"ERA5 ingestion complete. {len(df):,} rows saved."
             )

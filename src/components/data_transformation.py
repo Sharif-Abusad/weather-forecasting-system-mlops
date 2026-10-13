@@ -16,13 +16,20 @@ Transforms raw ERA5 weather data into ML-ready features:
 
 import os
 import sys
+from pathlib import Path
 import numpy as np
 import pandas as pd
 from src.logger import logger
 from src.exception import WeatherException
-from src.entity.config_entity import DataTransformationConfig
-from src.entity.artifact_entity import DataTransformationArtifact, DataIngestionArtifact
-from src.utils.main_utils import read_yaml_file, create_directories
+from src.entity.config_entity import (
+    DataIngestionConfig,
+    DataTransformationConfig,
+)
+from src.entity.artifact_entity import (
+    DataTransformationArtifact, 
+    DataIngestionArtifact
+)
+from src.utils.main_utils import read_yaml_file, create_directories, save_json
 
 
 # ── ERA5 column rename map ────────────────────────────────────
@@ -55,7 +62,7 @@ class DataTransformation:
     # ── Load ─────────────────────────────────────────────────────
     def _load_data(self) -> pd.DataFrame:
         try:
-            df = pd.read_csv(self.data_ingestion_artifact.raw_file_path)
+            df = pd.read_csv(self.data_ingestion_artifact.raw_file)
             logger.info(f"Loaded raw data — {len(df):,} rows")
             return df
         except Exception as e:
@@ -300,6 +307,16 @@ class DataTransformation:
             df.to_csv(self.config.final_features_path, index=False)
             logger.info(f"Final features saved -> {self.config.final_features_path}")
 
+            report = {
+                "transformation_status": True,
+                "total_rows":        len(df),
+                "total_columns":     df.shape[1],
+                "columns":           list(df.columns)
+            }
+            create_directories([os.path.dirname(self.config.report_file_path)])
+            save_json(self.config.report_file_path, report)
+            logger.info(f"Report saved -> {self.config.report_file_path}")
+
             artifact = DataTransformationArtifact(
                 clean_file_path=self.config.clean_file_path,
                 final_features_path=self.config.final_features_path,
@@ -317,16 +334,31 @@ class DataTransformation:
 
 
 if __name__ == "__main__":
-    from src.entity.config_entity import (
-        DataIngestionConfig,
-        DataTransformationConfig
-    )
-    from src.components.data_ingestion import DataIngestion
 
-    ingestion_config   = DataIngestionConfig()
-    ingestion          = DataIngestion(ingestion_config)
-    ingestion_artifact = ingestion.initiate_data_ingestion()
-    
-    transformation_config   = DataTransformationConfig()
-    transformation          = DataTransformation(transformation_config, ingestion_artifact)
+    # 1. Get the existing ingestion output path.
+    ingestion_config = DataIngestionConfig()
+    raw_file = Path(ingestion_config.raw_file)
+
+    # 2. Ensure the raw dataset already exists.
+    if not raw_file.exists():
+        raise FileNotFoundError(
+            f"Raw dataset not found: {raw_file}. "
+            "Run data ingestion first."
+        )
+
+    # 3. Reconstruct the ingestion artifact.
+    ingestion_artifact = DataIngestionArtifact(
+        raw_file=str(raw_file),
+        is_ingested=True,
+        message="Using existing raw ERA5 dataset.",
+    )
+
+    # 4. Run only data transformation.
+    transformation_config = DataTransformationConfig()
+
+    transformation = DataTransformation(
+        transformation_config,
+        ingestion_artifact,
+    )
+
     transformation_artifact = transformation.initiate_data_transformation()

@@ -11,13 +11,21 @@ Runs both trainers in sequence under a single parent MLflow run:
 
 import os
 import sys
+import json
+from pathlib import Path
 import pandas as pd
 import mlflow
 
 from src.logger import logger
 from src.exception import WeatherException
-from src.entity.config_entity import ModelTrainerConfig
-from src.entity.artifact_entity import ModelTrainerArtifact, DataValidationArtifact
+from src.entity.config_entity import (
+    ModelTrainerConfig,
+    DataValidationConfig,
+)
+from src.entity.artifact_entity import (
+    DataValidationArtifact,
+    ModelTrainerArtifact
+)
 from src.utils.main_utils import create_directories
 from src.components.xgboost_trainer import XGBoostTrainer
 from src.components.lstm_trainer import LSTMTrainer
@@ -108,17 +116,35 @@ class ModelTrainer:
 
 
 if __name__ == "__main__":
-    from src.entity.config_entity import (
-        DataIngestionConfig, DataTransformationConfig,
-        DataValidationConfig, ModelTrainerConfig,
+    validation_config = DataValidationConfig()
+    report_path = Path(validation_config.report_file_path)
+
+    if not report_path.exists():
+        raise FileNotFoundError(
+            f"Validation report not found: {report_path}"
+        )
+
+    with report_path.open("r", encoding="utf-8") as file:
+        report = json.load(file)
+
+    validation_status = report["validation_status"]
+
+    validation_artifact = DataValidationArtifact(
+        validation_status=validation_status,
+        report_file_path=str(report_path),
+        message=(
+            "Validation passed."
+            if validation_status
+            else f"Validation failed: {report.get('errors', [])}"
+        ),
     )
-    from src.components.data_ingestion import DataIngestion
-    from src.components.data_transformation import DataTransformation
-    from src.components.data_validation import DataValidation
 
-    ingestion_artifact      = DataIngestion(DataIngestionConfig()).initiate_data_ingestion()
-    transformation_artifact = DataTransformation(DataTransformationConfig(), ingestion_artifact).initiate_data_transformation()
-    validation_artifact     = DataValidation(DataValidationConfig(), transformation_artifact).initiate_data_validation()
+    if not validation_status:
+        raise ValueError(validation_artifact.message)
 
-    trainer  = ModelTrainer(ModelTrainerConfig(), validation_artifact)
+    trainer = ModelTrainer(
+        ModelTrainerConfig(),
+        validation_artifact,
+    )
+
     artifact = trainer.initiate_model_trainer()

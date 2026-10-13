@@ -13,12 +13,20 @@ Validates the transformed weather dataset against schema.yaml:
 
 import os
 import sys
+import json
 import pandas as pd
 from src.logger import logger
 from src.exception import WeatherException
-from src.entity.config_entity import DataValidationConfig
-from src.entity.artifact_entity import DataValidationArtifact, DataTransformationArtifact
+from src.entity.config_entity import (
+    DataTransformationConfig,
+    DataValidationConfig,
+)
+from src.entity.artifact_entity import (
+    DataTransformationArtifact,
+    DataValidationArtifact
+)
 from src.utils.main_utils import read_yaml_file, save_json, create_directories
+from pathlib import Path
 
 
 class DataValidation:
@@ -204,26 +212,36 @@ class DataValidation:
 
 
 if __name__ == "__main__":
-    from src.entity.config_entity import (
-        DataIngestionConfig,
-        DataTransformationConfig,
-        DataValidationConfig,
+    transformation_config = DataTransformationConfig()
+
+    # Verify that the transformation outputs exist.
+    clean_file = Path(transformation_config.clean_file_path)
+    features_file = Path(transformation_config.final_features_path)
+    report_file = Path(transformation_config.report_file_path)
+
+    for file_path in (clean_file, features_file, report_file):
+        if not file_path.exists():
+            raise FileNotFoundError(
+                f"Required transformation output not found: {file_path}"
+            )
+
+    # Read the existing transformation report.
+    with report_file.open("r", encoding="utf-8") as file:
+        report = json.load(file)
+
+    # Reconstruct the artifact from existing outputs.
+    transformation_artifact = DataTransformationArtifact(
+        clean_file_path=str(clean_file),
+        final_features_path=str(features_file),
+        is_transformed=report["transformation_status"],
+        message=f"Transformation complete. {report['total_rows']:,} rows.",
     )
-    from src.components.data_ingestion import DataIngestion
-    from src.components.data_transformation import DataTransformation
 
-    ingestion_config   = DataIngestionConfig()
-    ingestion          = DataIngestion(ingestion_config)
-    ingestion_artifact = ingestion.initiate_data_ingestion()
-    
-    transformation_config   = DataTransformationConfig()
-    transformation          = DataTransformation(transformation_config, ingestion_artifact)
-    transformation_artifact = transformation.initiate_data_transformation()
-
-    # ingestion_artifact      = DataIngestion(DataIngestionConfig()).initiate_data_ingestion()
-    # transformation_artifact = DataTransformation(DataTransformationConfig(), ingestion_artifact).initiate_data_transformation()
+    # Run only data validation.
     validation_config = DataValidationConfig()
-    validation = DataValidation(validation_config, transformation_artifact)
+    validation = DataValidation(
+        validation_config,
+        transformation_artifact,
+    )
 
-    # validation              = DataValidation(DataValidationConfig(), transformation_artifact)
-    validation_artifact                = validation.initiate_data_validation()
+    validation_artifact = validation.initiate_data_validation()
