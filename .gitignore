@@ -52,7 +52,10 @@ artifact/
 artifacts/
 mlruns/
 .mlflow/
-reports/figures
+reports/figures/
+reports/validation_report.json
+reports/eval_report.json
+reports/transformation_report.json
 
 # DVC
 .dvc/cache/
