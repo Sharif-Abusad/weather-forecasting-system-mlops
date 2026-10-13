@@ -5,8 +5,8 @@ stages:
     deps:
     - path: params.yaml
       hash: md5
-      md5: e05caf94c8536e53a166f03fe1dc02c4
-      size: 2040
+      md5: c2d33dea97e56d5c8d55572ad841236d
+      size: 2042
     - path: src/components/data_ingestion.py
       hash: md5
       md5: ee39179f709a8d3db0d137dc59b2419a
@@ -17,8 +17,8 @@ stages:
       size: 4060
     - path: src/entity/config_entity.py
       hash: md5
-      md5: abfd19ce53ca9bf60cbe17aef208ad57
-      size: 2723
+      md5: 585ff7175930d7e82ca895721a9c7790
+      size: 2724
     params:
       params.yaml:
         data.area:
@@ -65,8 +65,8 @@ stages:
       nfiles: 121
     - path: params.yaml
       hash: md5
-      md5: e05caf94c8536e53a166f03fe1dc02c4
-      size: 2040
+      md5: c2d33dea97e56d5c8d55572ad841236d
+      size: 2042
     - path: src/components/data_transformation.py
       hash: md5
       md5: bebbad458bada5b5741576cbd974b01a
@@ -77,8 +77,8 @@ stages:
       size: 4060
     - path: src/entity/config_entity.py
       hash: md5
-      md5: abfd19ce53ca9bf60cbe17aef208ad57
-      size: 2723
+      md5: 585ff7175930d7e82ca895721a9c7790
+      size: 2724
     params:
       params.yaml:
         feature_engineering.lag_hours:
@@ -129,8 +129,8 @@ stages:
       nfiles: 1
     - path: params.yaml
       hash: md5
-      md5: e05caf94c8536e53a166f03fe1dc02c4
-      size: 2040
+      md5: c2d33dea97e56d5c8d55572ad841236d
+      size: 2042
     - path: reports/validation_report.json
       hash: md5
       md5: 74331afc9f58eb99b5efefa0eb7d8525
@@ -149,13 +149,13 @@ stages:
       size: 12584
     - path: src/entity/config_entity.py
       hash: md5
-      md5: abfd19ce53ca9bf60cbe17aef208ad57
-      size: 2723
+      md5: 585ff7175930d7e82ca895721a9c7790
+      size: 2724
     params:
       params.yaml:
         lstm.batch_size: 32
         lstm.dropout: 0.21596778466458033
-        lstm.epochs: 2
+        lstm.epochs: 100
         lstm.features:
         - temperature
         - temp_lag_1
@@ -198,8 +198,8 @@ stages:
     outs:
     - path: saved_models
       hash: md5
-      md5: 54610bad26d369b1320aaf47168b0237.dir
-      size: 972852
+      md5: e41f769384bf32d752b266e6fc8feb24.dir
+      size: 972855
       nfiles: 5
   model_evaluation:
     cmd: python -m src.components.model_evaluation
@@ -211,29 +211,29 @@ stages:
       nfiles: 1
     - path: saved_models
       hash: md5
-      md5: 54610bad26d369b1320aaf47168b0237.dir
-      size: 972852
+      md5: e41f769384bf32d752b266e6fc8feb24.dir
+      size: 972855
       nfiles: 5
     - path: src/components/model_evaluation.py
       hash: md5
-      md5: 5681ee3c648015037ee6921a58db50a8
-      size: 16291
+      md5: c1e479ac57b03b504021abd4bec25f2e
+      size: 16303
     outs:
     - path: reports/eval_report.json
       hash: md5
-      md5: be4c823e1ded3b47734396c070a46104
-      size: 918
+      md5: 0d9546c3e5651fc5a25287a87c57888f
+      size: 922
   model_pusher:
     cmd: python -m src.components.model_pusher
     deps:
     - path: reports/eval_report.json
       hash: md5
-      md5: be4c823e1ded3b47734396c070a46104
-      size: 918
+      md5: 0d9546c3e5651fc5a25287a87c57888f
+      size: 922
     - path: saved_models
       hash: md5
-      md5: 54610bad26d369b1320aaf47168b0237.dir
-      size: 972852
+      md5: e41f769384bf32d752b266e6fc8feb24.dir
+      size: 972855
       nfiles: 5
     - path: src/components/model_pusher.py
       hash: md5
@@ -242,6 +242,6 @@ stages:
     outs:
     - path: deployment
       hash: md5
-      md5: 54610bad26d369b1320aaf47168b0237.dir
-      size: 972852
+      md5: e41f769384bf32d752b266e6fc8feb24.dir
+      size: 972855
       nfiles: 5

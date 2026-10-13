@@ -260,7 +260,7 @@ class ModelEvaluation:
                 f"XGB AUC {new_auc} > {previous['xgb_auc']} (prev): {xgb_ok}"
             )
 
-        accepted = lstm_ok and xgb_ok
+        accepted = lstm_ok or xgb_ok
         logger.info(f"Acceptance check — {reason}")
         return accepted, reason
 

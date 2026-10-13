@@ -25,41 +25,41 @@
     "learning_rate": 0.002497202586031813,
     "batch_size": 32
   },
-  "best_epoch": 2,
-  "best_val_loss": 0.02296,
+  "best_epoch": 49,
+  "best_val_loss": 0.001219,
   "train_samples": 30640,
   "val_samples": 6566,
   "test_samples": 6566,
   "metrics": {
-    "mae_celsius": 4.3656,
-    "rmse_celsius": 6.45,
-    "r2_score": 0.0428
+    "mae_celsius": 1.3771,
+    "rmse_celsius": 1.6715,
+    "r2_score": 0.9357
   },
   "per_step_metrics": {
     "+1h": {
-      "mae": 4.2404,
-      "rmse": 6.2542,
-      "r2": 0.0981
+      "mae": 1.213,
+      "rmse": 1.4854,
+      "r2": 0.9491
     },
     "+2h": {
-      "mae": 4.2691,
-      "rmse": 6.3416,
-      "r2": 0.0737
+      "mae": 1.3549,
+      "rmse": 1.6371,
+      "r2": 0.9383
     },
     "+3h": {
-      "mae": 4.2804,
-      "rmse": 6.3686,
-      "r2": 0.0668
+      "mae": 1.4004,
+      "rmse": 1.6902,
+      "r2": 0.9343
     },
     "+4h": {
-      "mae": 4.4214,
-      "rmse": 6.544,
-      "r2": 0.0158
+      "mae": 1.4332,
+      "rmse": 1.7336,
+      "r2": 0.9309
     },
     "+5h": {
-      "mae": 4.6165,
-      "rmse": 6.7303,
-      "r2": -0.0398
+      "mae": 1.4842,
+      "rmse": 1.7945,
+      "r2": 0.9261
     }
   }
 }
