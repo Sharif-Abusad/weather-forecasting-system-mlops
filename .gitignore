@@ -125,3 +125,5 @@ htmlcov/
 *.temp
 *.bak
 *.swp
+/artifact
+/saved_models
