@@ -42,7 +42,7 @@ class ModelEvaluationConfig:
     report_file_path:   str   = os.path.join("reports", MODEL_EVALUATION_REPORT_FILE)
     lstm_mae_threshold: float = LSTM_MAE_THRESHOLD
     xgb_auc_threshold:  float = XGB_AUC_THRESHOLD
-    saved_model_dir:    str   = SAVED_MODEL_DIR
+    pushed_model_dir:    str   = PUSHED_MODEL_DIR
 
 
 @dataclass

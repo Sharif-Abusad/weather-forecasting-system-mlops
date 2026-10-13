@@ -54,10 +54,10 @@ class ModelEvaluation:
     def _load_previous_metrics(self) -> dict | None:
         try:
             lstm_meta_path = os.path.join(
-                self.config.saved_model_dir, "lstm_model_meta.json"
+                self.config.pushed_model_dir, "lstm_model_meta.json"
             )
             xgb_meta_path = os.path.join(
-                self.config.saved_model_dir, "xgb_model_meta.json"
+                self.config.pushed_model_dir, "xgb_model_meta.json"
             )
 
             if not os.path.exists(lstm_meta_path) or \
@@ -384,13 +384,13 @@ if __name__ == "__main__":
     # Load trainer artifact from the latest artifact directory
     # import glob
     # latest = sorted(glob.glob("artifact/*/model_trainer"))[-1]
-
+    trainer_config = ModelTrainerConfig()
     trainer_artifact = ModelTrainerArtifact(
-        lstm_model_path = ModelTrainerConfig().lstm_model_path,
-        xgb_model_path  = ModelTrainerConfig().xgb_model_path,
-        lstm_meta_path  = ModelTrainerConfig().lstm_meta_path,
-        xgb_meta_path   = ModelTrainerConfig().xgb_meta_path,
-        scaler_path     = ModelTrainerConfig().scaler_path,
+        lstm_model_path = trainer_config.lstm_model_path,
+        xgb_model_path  = trainer_config.xgb_model_path,
+        lstm_meta_path  = trainer_config.lstm_meta_path,
+        xgb_meta_path   = trainer_config.xgb_meta_path,
+        scaler_path     = trainer_config.scaler_path,
         lstm_mae        = 0.0,
         xgb_auc         = 0.0,
         is_trained      = True,
