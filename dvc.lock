@@ -5,7 +5,7 @@ stages:
     deps:
     - path: params.yaml
       hash: md5
-      md5: c2d33dea97e56d5c8d55572ad841236d
+      md5: 76d2df325c4ee9c5d1313f9d74e4a1a6
       size: 2042
     - path: src/components/data_ingestion.py
       hash: md5
@@ -65,7 +65,7 @@ stages:
       nfiles: 121
     - path: params.yaml
       hash: md5
-      md5: c2d33dea97e56d5c8d55572ad841236d
+      md5: 76d2df325c4ee9c5d1313f9d74e4a1a6
       size: 2042
     - path: src/components/data_transformation.py
       hash: md5
@@ -129,7 +129,7 @@ stages:
       nfiles: 1
     - path: params.yaml
       hash: md5
-      md5: c2d33dea97e56d5c8d55572ad841236d
+      md5: 76d2df325c4ee9c5d1313f9d74e4a1a6
       size: 2042
     - path: reports/validation_report.json
       hash: md5
@@ -155,7 +155,7 @@ stages:
       params.yaml:
         lstm.batch_size: 32
         lstm.dropout: 0.21596778466458033
-        lstm.epochs: 100
+        lstm.epochs: 101
         lstm.features:
         - temperature
         - temp_lag_1
@@ -198,7 +198,7 @@ stages:
     outs:
     - path: saved_models
       hash: md5
-      md5: e41f769384bf32d752b266e6fc8feb24.dir
+      md5: 98d519045735875b2443a28f69fb027c.dir
       size: 972855
       nfiles: 5
   model_evaluation:
@@ -211,7 +211,7 @@ stages:
       nfiles: 1
     - path: saved_models
       hash: md5
-      md5: e41f769384bf32d752b266e6fc8feb24.dir
+      md5: 98d519045735875b2443a28f69fb027c.dir
       size: 972855
       nfiles: 5
     - path: src/components/model_evaluation.py
@@ -221,18 +221,18 @@ stages:
     outs:
     - path: reports/eval_report.json
       hash: md5
-      md5: 0d9546c3e5651fc5a25287a87c57888f
+      md5: ce9895c0c51d3e9d457f797a57f3e7d8
       size: 922
   model_pusher:
     cmd: python -m src.components.model_pusher
     deps:
     - path: reports/eval_report.json
       hash: md5
-      md5: 0d9546c3e5651fc5a25287a87c57888f
+      md5: ce9895c0c51d3e9d457f797a57f3e7d8
       size: 922
     - path: saved_models
       hash: md5
-      md5: e41f769384bf32d752b266e6fc8feb24.dir
+      md5: 98d519045735875b2443a28f69fb027c.dir
       size: 972855
       nfiles: 5
     - path: src/components/model_pusher.py
@@ -242,6 +242,6 @@ stages:
     outs:
     - path: deployment
       hash: md5
-      md5: e41f769384bf32d752b266e6fc8feb24.dir
+      md5: 98d519045735875b2443a28f69fb027c.dir
       size: 972855
       nfiles: 5

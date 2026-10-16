@@ -129,3 +129,4 @@ htmlcov/
 /artifact
 /saved_models
 deployment/
+/deployment
