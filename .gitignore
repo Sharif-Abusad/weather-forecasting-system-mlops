@@ -128,3 +128,4 @@ htmlcov/
 *.swp
 /artifact
 /saved_models
+deployment/
