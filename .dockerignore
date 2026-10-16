@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+
+# Data (large files — mount as volume or use DVC pull)
+data/archives/
+data/raw/
+
+# Git / DVC
+.git/
+.dvc/tmp/
+mlruns/
+
+# Dev only
+notebook/
+.env
+logs/
+artifact/
+reports/figures/
