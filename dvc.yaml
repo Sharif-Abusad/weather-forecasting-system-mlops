@@ -73,7 +73,8 @@ stages:
       - split.test_size
       - split.random_state
     outs:
-      - saved_models
+      - saved_models:
+          cache: False
 
   model_evaluation:
     cmd: python -m src.components.model_evaluation
@@ -92,5 +93,4 @@ stages:
       - reports/eval_report.json
       - saved_models
     outs:
-      - deployment:
-          cache: false
+      - deployment
