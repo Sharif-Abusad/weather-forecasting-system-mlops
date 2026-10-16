@@ -1,4 +1,6 @@
 [core]
-    remote = local_remote
+    remote = origin
 ['remote "local_remote"']
     url = /tmp/dvc-storage
+['remote "origin"']
+    url = https://dagshub.com/Sharif-Abusad/weather-forecasting-system-mlops.dvc
