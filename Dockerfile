@@ -15,11 +15,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy project
 COPY . .
 
+RUN apt-get update && apt-get install -y --no-install-recommends git \
+    && rm -rf /var/lib/apt/lists/*
+    
 # Install package in editable mode
 RUN pip install --no-cache-dir -e .
-
-COPY start.sh .
-RUN chmod +x start.sh
 
 # Expose port
 EXPOSE 8000
