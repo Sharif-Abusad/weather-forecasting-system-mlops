@@ -18,6 +18,9 @@ COPY . .
 # Install package in editable mode
 RUN pip install --no-cache-dir -e .
 
+COPY start.sh .
+RUN chmod +x start.sh
+
 # Expose port
 EXPOSE 8000
 
