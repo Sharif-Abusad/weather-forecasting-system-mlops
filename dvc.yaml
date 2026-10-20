@@ -6,7 +6,6 @@ stages:
       - src/components/data_ingestion.py
       - src/entity/config_entity.py
       - src/constants/__init__.py
-      - params.yaml
     params:
       - data.years
       - data.area
@@ -23,7 +22,6 @@ stages:
       - src/entity/config_entity.py
       - src/constants/__init__.py
       - config/schema.yaml
-      - params.yaml
       - data/raw
     params:
       - feature_engineering.lag_hours
