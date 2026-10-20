@@ -91,4 +91,5 @@ stages:
       - reports/eval_report.json
       - saved_models
     outs:
-      - deployment
+      - deployment:
+          persist: true
